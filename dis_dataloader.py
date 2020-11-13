@@ -12,11 +12,19 @@ from generator import generator
 
 def get_dis_iter(dataset = None, training_pairs=None, num_data=None, num_workers=0):
     
-    if training_pairs:
+    if training_pairs is not None:
+        from gen_dataset import gen_dataset
+        gen_iter = get_gen_iter(gen_dataset=gen_dataset, batch_size=20)
+
         if num_data:
-            dis_dataset = DisDataset(random.sample(training_pairs, num_data))
+            dis_dataset = DisDataset(dataset = dataset, training_pairs = random.sample(training_pairs, num_data), gen_iter = gen_iter, generator = generator)
+            # dis_dataset = DisDataset(random.sample(training_pairs, num_data))
         else:
-            dis_dataset = DisDataset(training_pairs)
+            # dis_dataset = DisDataset(training_pairs = training_pairs)
+            dis_dataset = DisDataset(dataset = dataset, training_pairs = training_pairs, gen_iter = gen_iter, generator = generator)
+            # dataset = None, training_pairs = None, gen_iter = None, generator = None
+            # dataset = dataset, training_pairs = None, num_data=None, num_workers=0
+            # dataset = dataset, training_pairs = None, gen_iter = gen_iter, generator = generator
 
     else:
         if num_data:
