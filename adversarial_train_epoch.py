@@ -38,7 +38,7 @@ def get_cuda(tensor):
 def print_statistics(epoch, num_epochs, num_iters, gen_iter, global_step, loss):
     
     print('='*100)
-    print('GAN Training log:')
+    print('Generator Training log:')
     print('- Epoch: {}/{}'.format(epoch, num_epochs))
     print('- Iter: {}/{}'.format(num_iters, gen_iter.__len__()))
     print('- Global step: {}'.format(global_step))

@@ -64,8 +64,11 @@ def write_dis_dataset(dataset, gen_iter, generator, filepath):
                 for j in range(len(article_words)):
                     enc_padding_mask[i][j] = 1
             
+            enc_padding_mask = get_cuda(enc_padding_mask)
+            
             # 2. ct_e (aka context)
             ct_e = torch.zeros(batch_size, 2*gen_opts.hidden_size)
+            ct_e = get_cuda(ct_e)
 
             # 3. extra_zeros
             ## 3.1 Articles2IDs
@@ -169,6 +172,9 @@ def write_dis_dataset(dataset, gen_iter, generator, filepath):
             # - out_lens:           (batch_size)
             # - decoder_outputs:    (batch_size, max_out_len, vocab_size)
             # out_seqs, out_lens, decoder_outputs = generator(src_seqs, src_lens, enable_dropout=False)
+            # src_seqs = get_cuda(src_seqs)
+            # src_lens = get_cuda(src_lens)
+            
             out_seqs, out_lens, decoder_outputs = generator(src_seqs, src_lens, enc_padding_mask, ct_e, extra_zeros, enc_batch_extend_vocab, sum_temporal_srcs, prev_s, extend_vocab_size, enable_dropout=True, state=None)
 
             # (seq_len, batch_size) -> (batch_size, seq_len)

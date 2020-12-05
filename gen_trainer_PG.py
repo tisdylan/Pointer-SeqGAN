@@ -1,5 +1,5 @@
 import torch
-
+import torch.nn as nn
 from gan_loss import gan_loss
 
 def gen_trainer_PG(src_seqs, src_lens, generator, encoder_optim, decoder_optim, enc_padding_mask, ct_e, extra_zeros, enc_batch_extend_vocab, sum_temporal_srcs, prev_s, extend_vocab_size, num_rollout=16, USE_CUDA=True):
@@ -24,7 +24,13 @@ def gen_trainer_PG(src_seqs, src_lens, generator, encoder_optim, decoder_optim, 
     decoder_optim.zero_grad()
 
     loss.backward()
-
+    
+    # nn.utils.clip_grad_value_(generator.parameters(), clip_value=1.1)
+    nn.utils.clip_grad_value_(generator.encoder.parameters(), clip_value=1.1)
+    nn.utils.clip_grad_value_(generator.decoder.parameters(), clip_value=1.1)
+    # nn.utils.clip_grad_norm_(generator.encoder.rnn.parameters(), max_norm=20, norm_type=2)
+    # nn.utils.clip_grad_norm_(generator.decoder.lstm.parameters(), max_norm=20, norm_type=2)
+    
     encoder_optim.step()
     decoder_optim.step()
 

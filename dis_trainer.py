@@ -35,6 +35,8 @@ def dis_trainer(doc_seqs, summary_seqs, labels, discriminator, dis_optim, USE_CU
 
     dis_optim.zero_grad()
     loss.backward()
+    nn.utils.clip_grad_value_(discriminator.parameters(), clip_value=1.1)
+    # nn.utils.clip_grad_value_(discriminator.lin.weight, clip_value=1.1)
     dis_optim.step()
 
 

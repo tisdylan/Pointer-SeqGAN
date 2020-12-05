@@ -31,21 +31,22 @@ else:
     gen_opts.batch_first = True
 
     # Configure optimization
-    gen_opts.learning_rate = 0.001
+    gen_opts.learning_rate = 0.0001 #0.001
     
     # Configure training
     gen_opts.max_seq_len = 120          # max sequence length to prevent OOM.
     gen_opts.batch_size = 20
     gen_opts.num_epochs = 3
-    gen_opts.print_every_step = 500
-    gen_opts.save_every_step = 5000
+    gen_opts.print_every_step = 100
+    gen_opts.save_every_step = 100
     # gen_opts.num_epochs = 1
     # gen_opts.print_every_step = 30
     # gen_opts.save_every_step = 50
+    gen_opts.lr_decay_steps = 50 # decay lr after each 50 steps (0.941205)
     
     gen_opts.max_iterations = 500000 # 最大 iter 数
 
-    gen_opts.max_decoding_steps = 15 # TS 说 99% 都小于 15
+    gen_opts.max_decoding_steps = 25 # TS 说 99% 都小于 15
 
     # gen_opts.embedding_dim=256
     

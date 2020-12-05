@@ -34,9 +34,11 @@ class GenDataset(Dataset):
                 self.counter = counter
             print('- Building source vocabulary...')
             self.vocab = self.build_vocab(self.counter, filter_vocab, max_vocab_size)
+            print('- Saving vocab...')
+            save_vocab(self.vocab)
         else:
             self.vocab = vocab
-                        
+
         print('='*100)
         print('Dataset Info:')
         print('- Number of training pairs: {}'.format(self.__len__()))
@@ -205,12 +207,20 @@ import pandas as pd
 from tqdm import trange
 
 import csv
+import numpy as np
 
-# #with open(os.path.join(REPO_DIR, "training_pairs_seg.pkl"), 'rb') as f:
-# with open(os.path.join(REPO_DIR, "train.pkl"), 'rb') as f:
-#     training_pairs = pickle.load(f)
+def save_vocab(vocab):
+    np.save('vocab.npy', vocab)
 
-#input_gen = text_generator(example_generator=example_generator(GAN_opts.train_data_path, single_pass=False))
+def load_vocab(vocab_url):
+    from pathlib import Path
+    vocab_url = Path(vocab_url)
+    if vocab_url.is_file():
+        vocab = np.load(vocab_url, allow_pickle=True).item()
+    else:
+        print("Vocab file not found. GenDataset will build one instead.")
+        vocab = None
+    return vocab
 
 count = 0
 
@@ -218,26 +228,10 @@ training_pairs = []
 src_sents = []
 tgt_sents = []
 
-# while True:
-#     try:
-#         (src_sents, abstract) = next(input_gen)
-#     except StopIteration:
-#         print("Info: The example generator for this example queue filling thread has exhausted data.")
-#         print("Count: ", count)
-        
-#     count += 1
-#     if count % 1 == 0:
-#         print("Count: ", count)
-
-# for i in range(287112):
-# # for i in range(10000):
-#     (article, abstract) = next(input_gen) #这里改一下
-#     src_sents.append([article.strip()])
-#     tgt_sents.append([abstract.strip()])
-
 # input_gen_df = pd.read_csv(r'/usr/local/Convolutional SeqGAN/small-covid-19.csv')
-input_gen_df = pd.read_csv(r'/usr/local/Convolutional SeqGAN/small-250.csv')
-# input_gen_df = pd.read_csv(r'/usr/local/Convolutional SeqGAN/covid-19.csv')
+# input_gen_df = pd.read_csv(r'/usr/local/Convolutional SeqGAN/small-250.csv')
+input_gen_df = pd.read_csv(r'./covid-19-withoutEmpty.csv')
+# input_gen_df = pd.read_csv(r'./covid-19-1.csv')
 
 input_gen_df.sample(frac=1)
 input_gen_df.info()
@@ -258,15 +252,19 @@ print ("Getting training pairs...")
 training_pairs=(list(zip(src_sents, tgt_sents)))
 print("Training Pairs Length: ", len(training_pairs))
 
+vocab = load_vocab('./vocab-5000.npy')
+
 def get_gen_dataset(num_data=None):
     if num_data:
         assert(num_data <= len(training_pairs))
         num_data = int(num_data)
-        gen_dataset = GenDataset(training_pairs=random.sample(training_pairs, num_data),
+        gen_dataset = GenDataset(vocab = vocab,
+                                 training_pairs=random.sample(training_pairs, num_data),
                                  filter_vocab=gen_opts.filter_vocab,
                                  max_vocab_size=gen_opts.max_vocab_size)        
     else:
-        gen_dataset = GenDataset(training_pairs=training_pairs,
+        gen_dataset = GenDataset(vocab = vocab,
+                                 training_pairs=training_pairs,
                                  filter_vocab=gen_opts.filter_vocab,
                                  max_vocab_size=gen_opts.max_vocab_size)
     

@@ -111,14 +111,14 @@ def gen_trainer(encoder, decoder, encoder_optim, decoder_optim, max_dec_steps, d
         # print("Decoder Steps: ", max_dec_steps)
 
         # use_gound_truth = get_cuda((torch.rand(len(encoder_outputs)) > 0.25)).long() #Probabilities indicating whether to use ground truth labels instead of previous decoded tokens
-        # x_t = use_gound_truth * dec_batch[:, t] + (1 - use_gound_truth) * x_t #Select decoder input based on use_ground_truth probabilities
+        # x_t = use_gound_truth * target_batch[:, t] + (1 - use_gound_truth) * x_t #Select decoder input based on use_ground_truth probabilities
         x_t = decoder.embedding(x_t)
 
         decoder_output, s_t, ct_e, sum_temporal_srcs, prev_s \
                 = decoder(x_t, s_t, encoder_outputs, enc_padding_mask, ct_e, extra_zeros, enc_batch_extend_vocab, sum_temporal_srcs, prev_s) # 去掉了第四项 src_lens
             
         decoder_outputs[t] = decoder_output
-        print("Got decoder output. Step: ", t+1, "/", max_dec_steps) # 用来看是不是正常通过的
+        #print("Got decoder output. Step: ", t+1, "/", max_dec_steps) # 用来看是不是正常通过的
         
         target = target_batch[:, t]
         log_probs = torch.log(decoder_output + eps)

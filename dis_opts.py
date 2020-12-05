@@ -23,7 +23,7 @@ else:
     dis_opts.fixed_embeddings = False
 
     # Configure optimization
-    dis_opts.learning_rate = 0.001
+    dis_opts.learning_rate = 0.0001 #0.001
     dis_opts.momentum = 0.9
     
     # Configure training
@@ -33,8 +33,8 @@ else:
     dis_opts.print_every_step = 500
     dis_opts.save_every_step = 5000
     # dis_opts.num_epochs = 2
-    # dis_opts.print_every_step = 50
-    # dis_opts.save_every_step = 100
+    dis_opts.print_every_step = 50
+    dis_opts.save_every_step = 100
     
     # Configure adversarial training
     dis_opts.adversarial_num_epoch = 1

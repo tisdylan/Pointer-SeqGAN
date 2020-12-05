@@ -46,7 +46,7 @@ def train_dis(discriminator, dis_optim, num_epochs, dis_iter, save_every_step=50
     save_total_num_data = 0
 
     # for debug use:  
-    num_epochs = 1
+    # num_epochs = 1
 
     for epoch in range(1, num_epochs+1):
         for batch_id, batch_data in tqdm(enumerate(dis_iter)):

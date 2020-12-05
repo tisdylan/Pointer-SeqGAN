@@ -29,33 +29,33 @@ if __name__ == "__main__":
 
     # Pretrain Generator using MLE
 
-    # gen_iter = get_gen_iter(gen_dataset=gen_dataset,
-    #                         batch_size=gen_opts.batch_size)
+    gen_iter = get_gen_iter(gen_dataset=gen_dataset,
+                            batch_size=gen_opts.batch_size)
 
-    # train_gen(dataset=gen_dataset, #
-    #           encoder=encoder, 
-    #           decoder=decoder, 
-    #           encoder_optim=encoder_optim, 
-    #           decoder_optim=decoder_optim, 
-    #           num_epochs=gen_opts.num_epochs, 
-    #           gen_iter=gen_iter, #
-    #           save_every_step=gen_opts.save_every_step, #
-    #           print_every_step=gen_opts.print_every_step) #
+    train_gen(dataset=gen_dataset, #
+              encoder=encoder, 
+              decoder=decoder, 
+              encoder_optim=encoder_optim, 
+              decoder_optim=decoder_optim, 
+              num_epochs=gen_opts.num_epochs, 
+              gen_iter=gen_iter, #
+              save_every_step=gen_opts.save_every_step, #
+              print_every_step=gen_opts.print_every_step) #
 
 
     # Pretrain Discriminator
 
 
-    training_pairs = get_training_pairs(gen_dataset)
+    # training_pairs = get_training_pairs(gen_dataset)
 
-    dis_iter = get_dis_iter(training_pairs=training_pairs, num_workers=0)
+    # dis_iter = get_dis_iter(training_pairs=training_pairs, num_workers=0)
 
-    train_dis(discriminator=discriminator, 
-              dis_optim=dis_optim, 
-              num_epochs=dis_opts.num_epochs, 
-              dis_iter=dis_iter, 
-              save_every_step=dis_opts.save_every_step, 
-              print_every_step=dis_opts.print_every_step)
+    # train_dis(discriminator=discriminator, 
+    #           dis_optim=dis_optim, 
+    #           num_epochs=dis_opts.num_epochs, 
+    #           dis_iter=dis_iter, 
+    #           save_every_step=dis_opts.save_every_step, 
+    #           print_every_step=dis_opts.print_every_step)
 
 
     # Adversarial Training
@@ -80,5 +80,5 @@ if __name__ == "__main__":
                       print_every_step=GAN_opts.G_print_every_step, 
                       save_every_step=GAN_opts.G_save_every_step,
                       num_rollout=GAN_opts.num_rollout)
-
-print("Finished!")
+    
+    print("Finished!")

@@ -214,7 +214,7 @@ class Decoder(nn.Module):
         self.dropout = dropout
         #self.attention = attention
         
-        self.enc_attention = encoder_attention() # 改为单独的文件?
+        self.enc_attention = encoder_attention()
         self.dec_attention = decoder_attention()
         self.x_context = nn.Linear(hidden_size*2 + self.word_vec_size, self.word_vec_size)
         # self.x_context = nn.Linear(hidden_size*2, self.word_vec_size)

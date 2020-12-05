@@ -15,8 +15,11 @@ from helper import PAD, SOS, EOS, UNK
 
 import itertools
 
-model_name = 'A Deep Reinforced Generative Adversarial Network for Abstractive Text Summarization'
-observe_doc = "While this intra-temporal attention function ensures that different parts of the encoded input se- quence are used, our decoder can still generate repeated phrases based on its own hidden states, especially when generating long sequences. To prevent that, we can incorporate more information about the previously decoded sequence into the decoder. Looking back at previous decoding steps will allow our model to make more structured predictions and avoid repeating the same information, even if that information was generated many steps away. To achieve this, we introduce an intra- decoder attention mechanism. This mechanism is not present in existing encoder-decoder models for abstractive summarization."
+from generator import generator
+
+# A Deep Reinforced Generative Adversarial Network for Abstractive Text Summarization
+model_name = 'PreTrainGen'
+observe_doc = ""
 
 def get_cuda(tensor):
     if torch.cuda.is_available():
@@ -25,7 +28,8 @@ def get_cuda(tensor):
 
 def print_statistics(epoch, num_epochs, num_iters, gen_iter, global_step, loss):
     
-    print('='*100)
+    print()
+    print('\n' + '='*50)
     print('Training log:')
     print('- Epoch: {}/{}'.format(epoch, num_epochs))
     print('- Iter: {}/{}'.format(num_iters, gen_iter.__len__()))
@@ -40,7 +44,7 @@ def print_statistics(epoch, num_epochs, num_iters, gen_iter, global_step, loss):
     # out_text = summarizer.summary(observe_doc)
     # print(out_text)
     
-    print('='*100 + '\n')
+    print('-'*30 + '\n')
 
 def save_checkpoint_training(encoder, decoder, encoder_optim, decoder_optim, epoch, num_iters, loss, global_step):
     savetime = ('%s' % datetime.now()).split('.')[0]
@@ -49,13 +53,13 @@ def save_checkpoint_training(encoder, decoder, encoder_optim, decoder_optim, epo
     checkpoint_path = save_gen_checkpoint(gen_opts, experiment_name, encoder, decoder, encoder_optim, 
                                           decoder_optim, epoch, num_iters, loss, global_step)
     
-    print('='*100)
+    print('\n' + '-'*30)
     print('Save checkpoint to "{}".'.format(checkpoint_path))
-    print('='*100 + '\n')
+    print('='*50 + '\n')
 
 
-def train_gen(dataset, encoder, decoder, encoder_optim, decoder_optim,
-              num_epochs, gen_iter, save_every_step=5000, print_every_step=50):
+def train_gen(dataset, encoder, decoder, encoder_optim, decoder_optim, encoder_optim_scheduler, decoder_optim_scheduler,
+              num_epochs, gen_iter, save_every_step=5000, print_every_step=50, continue_point = 0):
 
     # For saving checkpoint
     if LOAD_GEN_CHECKPOINT:
@@ -84,15 +88,20 @@ def train_gen(dataset, encoder, decoder, encoder_optim, decoder_optim,
     # print('='*100 + '\n')
 
     ### Ignore the last batch ?????
-    num_epochs = 1 # 测试 dis 的临时操作
+    num_epochs = 1 # 测试
 
-    for epoch in range(1, num_epochs+1):
+    for epoch in range(1, num_epochs+1): # range 为 2 也是测试用的
         for batch_id, batch_data in tqdm(enumerate(gen_iter)): 
+            
+            if batch_id < continue_point: continue
+            
             # Unpack batch data
             src_sents, tgt_sents, src_seqs, tgt_seqs, src_lens, tgt_lens = batch_data
             
             # Ignore the last batch if the batch size is less than that we set
-            if len(src_lens) < gen_opts.batch_size: continue
+            if len(src_lens) < gen_opts.batch_size: 
+                save_checkpoint_training(encoder, decoder, encoder_optim, decoder_optim, epoch, batch_id, save_loss, global_step)
+                continue
 
             # Ignore batch if there is a long sequence.
             # max_seq_len = max(src_lens + tgt_lens)
@@ -360,5 +369,13 @@ def train_gen(dataset, encoder, decoder, encoder_optim, decoder_optim,
             save_total_words = 0
             
             del save_loss
+        
+        if num_iters % gen_opts.lr_decay_steps != 0:
+            # learning rate decay
+            encoder_optim_scheduler.step()
+            decoder_optim_scheduler.step()
+            lr = encoder_optim.state_dict()['param_groups'][0]['lr']
+            print("Setting learning rate to", lr)
+            del lr
 
         del num_iters
