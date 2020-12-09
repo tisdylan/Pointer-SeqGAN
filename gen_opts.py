@@ -32,17 +32,16 @@ else:
 
     # Configure optimization
     gen_opts.learning_rate = 0.0001 #0.001
+    gen_opts.lr_decay_steps = 2 #10
+    gen_opts.lr_decay_rate = 0.91201084 #0.9623506264 #0.981855
     
     # Configure training
-    gen_opts.max_seq_len = 120          # max sequence length to prevent OOM.
-    gen_opts.batch_size = 20
+    gen_opts.max_seq_len = 120 # max sequence length to prevent OOM.
+    gen_opts.batch_size = 256 # 20 # 64
     gen_opts.num_epochs = 3
-    gen_opts.print_every_step = 100
-    gen_opts.save_every_step = 100
-    # gen_opts.num_epochs = 1
-    # gen_opts.print_every_step = 30
-    # gen_opts.save_every_step = 50
-    gen_opts.lr_decay_steps = 50 # decay lr after each 50 steps (0.941205)
+    gen_opts.print_every_step = 5 # 100 # 20
+    gen_opts.save_every_step = 5 # 100 # 20
+
     
     gen_opts.max_iterations = 500000 # 最大 iter 数
 

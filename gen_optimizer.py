@@ -7,8 +7,8 @@ from gen_opts import LOAD_GEN_CHECKPOINT, gen_opts
 encoder_optim = optim.Adam([p for p in encoder.parameters() if p.requires_grad], lr=gen_opts.learning_rate)
 decoder_optim = optim.Adam([p for p in decoder.parameters() if p.requires_grad], lr=gen_opts.learning_rate)
 
-encoder_optim_scheduler = torch.optim.lr_scheduler.ExponentialLR(encoder_optim, gamma=0.941205) # do after 50 steps
-decoder_optim_scheduler = torch.optim.lr_scheduler.ExponentialLR(decoder_optim, gamma=0.941205) # do after 50 steps
+encoder_optim_scheduler = optim.lr_scheduler.ExponentialLR(encoder_optim, gamma=gen_opts.lr_decay_rate)
+decoder_optim_scheduler = optim.lr_scheduler.ExponentialLR(decoder_optim, gamma=gen_opts.lr_decay_rate)
 
 if LOAD_GEN_CHECKPOINT:
     from gen_opts import gen_checkpoint

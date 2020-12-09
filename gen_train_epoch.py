@@ -93,7 +93,15 @@ def train_gen(dataset, encoder, decoder, encoder_optim, decoder_optim, encoder_o
     for epoch in range(1, num_epochs+1): # range 为 2 也是测试用的
         for batch_id, batch_data in tqdm(enumerate(gen_iter)): 
             
-            if batch_id < continue_point: continue
+            if batch_id < continue_point: 
+                # if checkpoints were loaded, then don't really have to do this manually
+                # if (batch_id + 1) % gen_opts.lr_decay_steps == 0:
+                #     encoder_optim_scheduler.step()
+                #     decoder_optim_scheduler.step()
+                #     lr = encoder_optim.state_dict()['param_groups'][0]['lr']
+                #     print("\n", "Iter ", batch_id + 1, ": Setting learning rate to ", lr)
+                #     del lr
+                continue
             
             # Unpack batch data
             src_sents, tgt_sents, src_seqs, tgt_seqs, src_lens, tgt_lens = batch_data
@@ -171,32 +179,8 @@ def train_gen(dataset, encoder, decoder, encoder_optim, decoder_optim, encoder_o
 
                 del oovs, limited_ids
             
-            # 获得子列表, 否则无法 zip
-            sub0 = src_data[0]
-            sub1 = src_data[1]
-            sub2 = src_data[2]
-            sub3 = src_data[3]
-            sub4 = src_data[4]
-            sub5 = src_data[5]
-            sub6 = src_data[6]
-            sub7 = src_data[7]
-            sub8 = src_data[8]
-            sub9 = src_data[9]
-            sub10 = src_data[10]
-            sub11 = src_data[11]
-            sub12 = src_data[12]
-            sub13 = src_data[13]
-            sub14 = src_data[14]
-            sub15 = src_data[15]
-            sub16 = src_data[16]
-            sub17 = src_data[17]
-            sub18 = src_data[18]
-            sub19 = src_data[19]
-
-            src_data = list(itertools.zip_longest(sub0, sub1, sub2, sub3, sub4, sub5, sub6, sub7, sub8, sub9, sub10, sub11, sub12, sub13, sub14, sub15, sub16, sub17, sub18, sub19, fillvalue=PAD))
+            src_data = list(itertools.zip_longest(*src_data, fillvalue=PAD))
             src_data = torch.LongTensor(src_data) # 转成 longTensor
-
-            del sub0, sub1, sub2, sub3, sub4, sub5, sub6, sub7, sub8, sub9, sub10, sub11, sub12, sub13, sub14, sub15, sub16, sub17, sub18, sub19
 
             ## Max Decoder Steps
             tgt_lens = torch.LongTensor(tgt_lens)
@@ -332,6 +316,16 @@ def train_gen(dataset, encoder, decoder, encoder_optim, decoder_optim, encoder_o
                 print_total_words = 0
 
                 del print_loss
+            
+            if (batch_id + 1) % gen_opts.lr_decay_steps == 0:
+                # learning rate decay
+                encoder_optim_scheduler.step()
+                decoder_optim_scheduler.step()
+                lr = encoder_optim.state_dict()['param_groups'][0]['lr']
+                
+                print("\nSetting learning rate to ", lr, '\n')
+                
+                del lr
 
             # Save checkpoint.
             if (batch_id + 1) % save_every_step == 0:
@@ -343,7 +337,7 @@ def train_gen(dataset, encoder, decoder, encoder_optim, decoder_optim, encoder_o
                 save_total_words = 0
 
                 del save_loss
-                
+            
             # Free memory
             del src_sents, tgt_sents, src_seqs, tgt_seqs, src_lens, tgt_lens, loss, num_words, enc_padding_mask, context, extra_zeros, enc_batch_extend_vocab, article_oovs_all, batch_enc_batch_extend_vocab, enc_input_extend_vocab_all, article_words
             torch.cuda.empty_cache()
@@ -370,12 +364,4 @@ def train_gen(dataset, encoder, decoder, encoder_optim, decoder_optim, encoder_o
             
             del save_loss
         
-        if num_iters % gen_opts.lr_decay_steps != 0:
-            # learning rate decay
-            encoder_optim_scheduler.step()
-            decoder_optim_scheduler.step()
-            lr = encoder_optim.state_dict()['param_groups'][0]['lr']
-            print("Setting learning rate to", lr)
-            del lr
-
         del num_iters
