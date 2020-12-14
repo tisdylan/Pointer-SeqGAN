@@ -17,6 +17,8 @@ import itertools
 
 from generator import generator
 
+# import time
+
 # A Deep Reinforced Generative Adversarial Network for Abstractive Text Summarization
 model_name = 'PreTrainGen'
 observe_doc = ""
@@ -93,15 +95,8 @@ def train_gen(dataset, encoder, decoder, encoder_optim, decoder_optim, encoder_o
     for epoch in range(1, num_epochs+1): # range 为 2 也是测试用的
         for batch_id, batch_data in tqdm(enumerate(gen_iter)): 
             
-            if batch_id < continue_point: 
-                # if checkpoints were loaded, then don't really have to do this manually
-                # if (batch_id + 1) % gen_opts.lr_decay_steps == 0:
-                #     encoder_optim_scheduler.step()
-                #     decoder_optim_scheduler.step()
-                #     lr = encoder_optim.state_dict()['param_groups'][0]['lr']
-                #     print("\n", "Iter ", batch_id + 1, ": Setting learning rate to ", lr)
-                #     del lr
-                continue
+            if batch_id < continue_point: continue
+            # time_start=time.time()
             
             # Unpack batch data
             src_sents, tgt_sents, src_seqs, tgt_seqs, src_lens, tgt_lens = batch_data
@@ -153,12 +148,14 @@ def train_gen(dataset, encoder, decoder, encoder_optim, decoder_optim, encoder_o
             extend_vocab_size = vocab_size # Extended vocab 最大值
             for i in range(len(src_sents)):
                 article_words = src_sents[i].split()
-                # article_words = article_words[0]
                 if len(article_words) > gen_opts.max_seq_len:
                     article_words = article_words[:gen_opts.max_seq_len]
                 ids=[]
                 oovs=[]
                 limited_ids=[]
+                
+                # print(article_words)
+                
                 for word in article_words:
                     word_id = dataset.vocab.token2id.get(word)
                     if word_id == UNK or word_id == None:  # If word is an OOV
@@ -174,6 +171,8 @@ def train_gen(dataset, encoder, decoder, encoder_optim, decoder_optim, encoder_o
                 enc_input_extend_vocab_all.append(ids)
                 article_oovs_all.append(oovs)
                 
+                # print(limited_ids)
+                
                 src_data.append(limited_ids) # 每一行都是列表, 每一个列表里面是独立的字符对应的 id
                 src_data_len.append(len(limited_ids)) #每一行是一个数字, 记录 id 长度
 
@@ -181,6 +180,8 @@ def train_gen(dataset, encoder, decoder, encoder_optim, decoder_optim, encoder_o
             
             src_data = list(itertools.zip_longest(*src_data, fillvalue=PAD))
             src_data = torch.LongTensor(src_data) # 转成 longTensor
+            
+            # print(src_data.cpu().numpy().tolist())
 
             ## Max Decoder Steps
             tgt_lens = torch.LongTensor(tgt_lens)
@@ -295,6 +296,8 @@ def train_gen(dataset, encoder, decoder, encoder_optim, decoder_optim, encoder_o
             # context = torch.zeros(max_dec_steps, gen_opts.hidden_size)
             
             enc_lens = src_data_len # 替换 enc_lens
+            # Preprocess_time_end=time.time()
+            # print('Preprocess time cost ',Preprocess_time_end-time_start,' s')
             # Train.
             # print("\nStart Trainer...")
             loss, num_words = gen_trainer(encoder, decoder, encoder_optim, decoder_optim, max_dec_steps, dec_lens, src_data, tgt_seqs, src_lens, tgt_lens, enc_lens, extend_vocab_size, target_batch, enc_padding_mask, context, extra_zeros, enc_batch_extend_vocab, USE_CUDA)
