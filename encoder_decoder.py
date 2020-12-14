@@ -64,11 +64,9 @@ class Encoder(nn.Module):
         
         # self.init_parameters()
 
-        # self.reduce_h = nn.Linear(1024, 512)
-        self.reduce_h = nn.Linear(512, 256)
+        self.reduce_h = nn.Linear(2*self.hidden_size, self.hidden_size) #self.reduce_h = nn.Linear(512, 256)
         init_linear_wt(self.reduce_h)
-        self.reduce_c = nn.Linear(512, 256)
-        # self.reduce_c = nn.Linear(1024, 512)
+        self.reduce_c = nn.Linear(2*self.hidden_size, self.hidden_size) #self.reduce_h = nn.Linear(512, 256)
         init_linear_wt(self.reduce_c)
 
     def forward(self, src_seqs, seq_lens): 
@@ -82,7 +80,7 @@ class Encoder(nn.Module):
         # enc_out, enc_hid = self.lstm(packed)
         # enc_out,_ = pad_packed_sequence(enc_out, batch_first=True)
         enc_out = enc_out.contiguous()                              #bs, n_seq, 2*n_hid
-        enc_out = enc_out.view(batch_size, 120, 512)                #bs, n_seq, 2*n_hid # 手动 resize ?
+        enc_out = enc_out.view(batch_size, 120, 2*self.hidden_size) #bs, n_seq, 2*n_hid # 手动 resize ?
         h, c = enc_hid                                              #shape of h: 2, bs, n_hid
         h = torch.cat(list(h), dim=1)                               #bs, 2*n_hid
         c = torch.cat(list(c), dim=1)
@@ -110,11 +108,12 @@ class Encoder(nn.Module):
 
 class encoder_attention(nn.Module):
 
-    def __init__(self, hidden_size=512, intra_encoder=True):
+    def __init__(self, hidden_size=128, intra_encoder=True):
         super(encoder_attention, self).__init__()
-        self.W_h = nn.Linear(512, 512, bias=False)
-        self.W_s = nn.Linear(512, 512)
-        self.v = nn.Linear(512, 1, bias=False)
+        self.hidden_size = hidden_size
+        self.W_h = nn.Linear(2*self.hidden_size, 2*self.hidden_size, bias=False)
+        self.W_s = nn.Linear(2*self.hidden_size, 2*self.hidden_size)
+        self.v = nn.Linear(2*self.hidden_size, 1, bias=False)
 
         self.intra_encoder = intra_encoder
 
@@ -161,7 +160,7 @@ class encoder_attention(nn.Module):
         #return ct_e, at, sum_temporal_srcs
 
 class decoder_attention(nn.Module):
-    def __init__(self, hidden_size = 256, intra_decoder=True):
+    def __init__(self, hidden_size = 128, intra_decoder=True):
         super(decoder_attention, self).__init__()
         self.intra_decoder = intra_decoder
         if self.intra_decoder:
@@ -250,6 +249,8 @@ class Decoder(nn.Module):
         out = self.V(out)                           # bs,n_hid
         out = self.V1(out)                          # bs, n_vocab
         vocab_dist = F.softmax(out, dim=1)
+        # out = out.cpu().detach().t().numpy().tolist()
+        # print(out[0])
         vocab_dist = p_gen * vocab_dist
         attn_dist_ = (1 - p_gen) * attn_dist
 
