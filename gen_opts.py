@@ -21,7 +21,7 @@ else:
     # Configure models
     gen_opts.word_vec_size = 256 # 一开始写了 300...
     #gen_opts.rnn_type = 'LSTM'
-    gen_opts.hidden_size = 256 # encoder embedding 定义的是 256
+    gen_opts.hidden_size = 128 # encoder embedding 定义的是 256
     gen_opts.num_layers = 1 # 一开始是 2
     gen_opts.dropout = 0.3
     gen_opts.bidirectional = True
@@ -32,15 +32,15 @@ else:
 
     # Configure optimization
     gen_opts.learning_rate = 0.0001 #0.001
-    gen_opts.lr_decay_steps = 2 #10
-    gen_opts.lr_decay_rate = 0.91201084 #0.9623506264 #0.981855
+    gen_opts.lr_decay_steps = 100 #40 #8
+    gen_opts.lr_decay_rate = 1 #0.992556794 #1.02734584 #1.007704814136 #0.988553095 #0.91201084 #0.9623506264 #0.981855
     
     # Configure training
     gen_opts.max_seq_len = 120 # max sequence length to prevent OOM.
-    gen_opts.batch_size = 256 # 20 # 64
+    gen_opts.batch_size = 32 # 256 # 20 # 64
     gen_opts.num_epochs = 3
-    gen_opts.print_every_step = 5 # 100 # 20
-    gen_opts.save_every_step = 5 # 100 # 20
+    gen_opts.print_every_step = 4 # 100 # 20
+    gen_opts.save_every_step = 8 # 100 # 20
 
     
     gen_opts.max_iterations = 500000 # 最大 iter 数
@@ -51,6 +51,6 @@ else:
     
     # Configure vocabulary size
     gen_opts.filter_vocab = True       # Vocab size too large may cause the problem of CUDA error: out of memory
-    gen_opts.max_vocab_size = 5000    # work only if filter_vocab is True
+    gen_opts.max_vocab_size = 50000    # work only if filter_vocab is True
 
     gen_opts.intra_encoder = True
