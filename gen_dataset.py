@@ -252,7 +252,7 @@ print ("Getting training pairs...")
 training_pairs=(list(zip(src_sents, tgt_sents)))
 print("Training Pairs Length: ", len(training_pairs))
 
-vocab = load_vocab('./vocab-5000.npy')
+vocab = load_vocab('./vocab-50000-fixed.npy')
 
 def get_gen_dataset(num_data=None):
     if num_data:
